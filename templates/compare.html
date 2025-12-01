@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="layout-main">
+    <div class="card">
+        <h2>Compare Two Loan Offers</h2>
+        <p class="card-subtitle">Enter details for both offers to see which is cheaper overall.</p>
+
+        <form method="post" class="form-grid">
+
+            <div class="form-section-heading">Offer 1</div>
+
+            <label>
+                Loan Amount (₹)
+                <input type="number" step="0.01" name="loan_amount1" required>
+            </label>
+            <label>
+                Interest Rate (% p.a.)
+                <input type="number" step="0.01" name="interest_rate1" required>
+            </label>
+            <label>
+                Tenure (years)
+                <input type="number" step="0.5" name="tenure_years1" required>
+            </label>
+            <label>
+                Processing Fee (₹)
+                <input type="number" step="0.01" name="processing_fee1" placeholder="0">
+            </label>
+
+            <div class="form-section-heading">Offer 2</div>
+
+            <label>
+                Loan Amount (₹)
+                <input type="number" step="0.01" name="loan_amount2" required>
+            </label>
+            <label>
+                Interest Rate (% p.a.)
+                <input type="number" step="0.01" name="interest_rate2" required>
+            </label>
+            <label>
+                Tenure (years)
+                <input type="number" step="0.5" name="tenure_years2" required>
+            </label>
+            <label>
+                Processing Fee (₹)
+                <input type="number" step="0.01" name="processing_fee2" placeholder="0">
+            </label>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">
+                    <i class="fa-solid fa-scale-balanced"></i> Compare Offers
+                </button>
+            </div>
+        </form>
+
+        {% if result %}
+        <div class="result-note" style="margin-top:20px;">
+            <h3 style="font-size:14px;">Comparison Result</h3>
+            <p>Offer 1: EMI = ₹{{ result.emi1 }}, Total Cost = ₹{{ result.total1 }}</p>
+            <p>Offer 2: EMI = ₹{{ result.emi2 }}, Total Cost = ₹{{ result.total2 }}</p>
+            <p><strong>{{ result.better }}</strong></p>
+            {% if result.diff > 0 %}
+            <p>Difference in total cost ≈ ₹{{ result.diff }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}

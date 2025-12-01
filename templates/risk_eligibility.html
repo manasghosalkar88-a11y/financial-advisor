@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section" data-aos="fade-up">
+  <div class="card">
+    <h2>Risk & Eligibility Score</h2>
+    <p class="card-subtitle">Estimate risk level and approval probability.</p>
+
+    <form method="POST" class="form-grid">
+      <label>Monthly Income (₹)
+        <input type="number" name="monthly_income" required>
+      </label>
+      <label>Existing EMI (₹)
+        <input type="number" name="existing_emi" required>
+      </label>
+      <label>Loan Amount (₹)
+        <input type="number" name="loan_amount" required>
+      </label>
+      <label>Tenure (years)
+        <input type="number" step="0.5" name="tenure_years" required>
+      </label>
+      <label>Interest Rate (% p.a.)
+        <input type="number" step="0.1" name="interest_rate" required>
+      </label>
+      <label>Credit Score
+        <input type="number" name="credit_score" required>
+      </label>
+      <div class="form-actions">
+        <button class="btn-primary" type="submit">Check Risk</button>
+      </div>
+    </form>
+
+    {% if result %}
+      {% if result.error %}
+        <p style="color:#f87171;">Error: {{ result.error }}</p>
+      {% else %}
+        <div class="result-note" style="margin-top:16px;">
+          <h3>Results</h3>
+          <p>Estimated EMI: <b>₹{{ result.emi }}</b></p>
+          <p>Risk Score: <b>{{ result.risk_score }}</b> ({{ result.risk_level }})</p>
+          <p>Approval Probability: <b>{{ result.approval_prob }}%</b></p>
+          <p>EMI as % of Income: <b>{{ result.emi_to_income_pct }}%</b></p>
+        </div>
+      {% endif %}
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- ========== MAIN SECTION: EMI + Chatbot ========== -->
+<section id="emi-section" class="section" data-aos="fade-up">
+    <div class="section-header">
+        <h2 class="section-title">Smart Financial Risk & EMI Advisor</h2>
+        <p class="section-subtitle">
+            Fill your loan details to get EMI, risk level, approval chances and credit score insights.
+        </p>
+    </div>
+
+    <div class="layout-main">
+        <!-- Left: EMI Form -->
+        <div class="card">
+            <h2>Loan & EMI Calculator</h2>
+            <p class="card-subtitle">Enter the details to get a personalized EMI & risk report.</p>
+
+            <!-- IMPORTANT: form posts to 'predict' (this must exist in app.py) -->
+            <form action="{{ url_for('predict') }}" method="POST" class="form-grid">
+
+                <label>
+                    Monthly Income (₹)
+                    <input type="number" step="0.01" name="monthly_income" required>
+                </label>
+
+                <label>
+                    Age
+                    <input type="number" name="age" required>
+                </label>
+
+                <label>
+                    Work Experience (years)
+                    <input type="number" step="0.1" name="work_experience" required>
+                </label>
+
+                <label>
+                    Existing EMI (₹)
+                    <input type="number" step="0.01" name="existing_emi" required>
+                </label>
+
+                <label>
+                    Credit Score
+                    <input type="number" name="credit_score" required>
+                </label>
+
+                <label>
+                    Loan Amount (₹)
+                    <input type="number" step="0.01" name="loan_amount" required>
+                </label>
+
+                <label>
+                    Tenure (years)
+                    <input type="number" step="0.5" name="tenure_years" required>
+                </label>
+
+                <label>
+                    Interest Rate (% p.a.)
+                    <input type="number" step="0.01" name="interest_rate" required>
+                </label>
+
+                <div class="form-section-heading">Optional: Prepayment</div>
+
+                <label>
+                    One-time Prepayment Amount (₹)
+                    <input type="number" step="0.01" name="prepay_amount" placeholder="e.g. 100000">
+                </label>
+
+                <label>
+                    Prepayment Month (from start)
+                    <input type="number" name="prepay_month" placeholder="e.g. 12">
+                </label>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        <i class="fa-solid fa-calculator"></i> Get EMI & Risk Report
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Right: Chatbot -->
+        <div class="card">
+            <h2>Financial Chatbot</h2>
+            <p class="card-subtitle">Ask about EMI, credit score, eligibility or prepayment.</p>
+
+            <div id="chatWindow" class="chat-window">
+                <div class="chat-bot">
+                    Hi! Ask me about EMI, credit score, eligibility or prepayment.
+                </div>
+            </div>
+
+            <form id="chatForm" class="chat-form">
+                <input type="text" id="chatInput" name="user_msg"
+                       placeholder="Ask something..." autocomplete="off">
+                <button type="submit" class="btn-primary">Send</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- ========== TOOLS SECTION (Cards that SCROLL to EMI or go to Compare) ========== -->
+<<section class="section" id="tools" data-aos="fade-up">
+    <div class="section-header">
+        <h2 class="section-title">Financial Tools Library</h2>
+        <p class="section-subtitle">
+            All tools in this mini-platform. Click any card to open the standalone tool.
+        </p>
+    </div>
+
+    <div class="tools-grid">
+
+        <!-- Credit Score Advisor -->
+        <a class="tool-card" href="{{ url_for('credit_advisor') }}">
+            <div class="tool-icon"><i class="fa-solid fa-credit-card"></i></div>
+            <h3>Credit Score Advisor</h3>
+            <p>Explains your score band (Excellent / Good / Risky) and gives tips.</p>
+            <div class="tool-meta">
+                <span class="tool-tag">Insights</span>
+                <span class="tool-link">See in tool →</span>
+            </div>
+        </a>
+
+        <!-- Prepayment Analyzer -->
+        <a class="tool-card" href="{{ url_for('prepayment_analyzer') }}">
+            <div class="tool-icon"><i class="fa-solid fa-wallet"></i></div>
+            <h3>Prepayment Analyzer</h3>
+            <p>Check interest saved and tenure reduced with prepayment.</p>
+            <div class="tool-meta">
+                <span class="tool-tag">Optimization</span>
+                <span class="tool-link">Try tool →</span>
+            </div>
+        </a>
+
+        <!-- Risk & Eligibility -->
+        <a class="tool-card" href="{{ url_for('risk_eligibility') }}">
+            <div class="tool-icon"><i class="fa-solid fa-shield-halved"></i></div>
+            <h3>Risk & Eligibility Score</h3>
+            <p>Risk level and approval chances based on your profile.</p>
+            <div class="tool-meta">
+                <span class="tool-tag">Risk Analytics</span>
+                <span class="tool-link">Open tool →</span>
+            </div>
+        </a>
+
+        <!-- EMI Simulator -->
+        <a class="tool-card" href="{{ url_for('emi_simulator') }}">
+            <div class="tool-icon"><i class="fa-solid fa-sliders"></i></div>
+            <h3>EMI Simulator</h3>
+            <p>Change tenure & rate and instantly see how EMI changes.</p>
+            <div class="tool-meta">
+                <span class="tool-tag">Interactive</span>
+                <span class="tool-link">Generate report →</span>
+            </div>
+        </a>
+
+    </div>
+</section>
+
+<!-- ========== SIMPLE CHAT JS ========== -->
+<script>
+const chatForm = document.getElementById('chatForm');
+const chatInput = document.getElementById('chatInput');
+const chatWindow = document.getElementById('chatWindow');
+
+chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = chatInput.value.trim();
+    if (!msg) return;
+
+    const userDiv = document.createElement('div');
+    userDiv.className = 'chat-user';
+    userDiv.textContent = msg;
+    chatWindow.appendChild(userDiv);
+
+    chatInput.value = "";
+
+    const formData = new FormData();
+    formData.append('user_msg', msg);
+
+    try {
+        const res = await fetch('{{ url_for("chat") }}', {
+            method: 'POST',
+            body: formData
+        });
+        const text = await res.text();
+        const botDiv = document.createElement('div');
+        botDiv.className = 'chat-bot';
+        botDiv.textContent = text;
+        chatWindow.appendChild(botDiv);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    } catch (err) {
+        const botDiv = document.createElement('div');
+        botDiv.className = 'chat-bot';
+        botDiv.textContent = 'Error talking to server.';
+        chatWindow.appendChild(botDiv);
+    }
+});
+</script>
+
+{% endblock %}

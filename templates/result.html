@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="result-wrapper">
+    <div class="card result-card">
+
+        <div class="card-header">
+            <h2><i class="fa-solid fa-chart-line"></i> Your EMI & Risk Report</h2>
+            <p class="card-subtitle">
+                Loan: ₹{{ loan_amount }} · Rate: {{ interest_rate }}% · Tenure: {{ tenure_years }} years
+            </p>
+        </div>
+
+        <!-- SUMMARY GRID -->
+        <div class="result-grid">
+            <div class="result-item">
+                <span class="label">Monthly EMI</span>
+                <span class="value">₹ {{ emi }}</span>
+            </div>
+            <div class="result-item">
+                <span class="label">Approval Probability</span>
+                <span class="value">{{ approval_prob }}%</span>
+            </div>
+            <div class="result-item">
+                <span class="label">Total Interest</span>
+                <span class="value">₹ {{ total_interest }}</span>
+            </div>
+            <div class="result-item">
+                <span class="label">Total Payment</span>
+                <span class="value">₹ {{ total_payment }}</span>
+            </div>
+            <div class="result-item">
+                <span class="label">Risk Level</span>
+                {% if risk_level == "Low" %}
+                    <span class="badge badge-low">Low</span>
+                {% elif risk_level == "Medium" %}
+                    <span class="badge badge-medium">Medium</span>
+                {% else %}
+                    <span class="badge badge-high">High</span>
+                {% endif %}
+            </div>
+            <div class="result-item">
+                <span class="label">EMI / Income</span>
+                <span class="value">{{ emi_to_income_pct }}%</span>
+            </div>
+        </div>
+
+        <!-- DOWNLOAD BUTTONS -->
+        <div class="form-actions" style="margin-top:12px; display:flex; gap:12px; flex-wrap:wrap;">
+            <a href="{{ url_for('download_pdf',
+                loan_amount=loan_amount,
+                interest_rate=interest_rate,
+                tenure_years=tenure_years,
+                emi=emi,
+                total_interest=total_interest,
+                total_payment=total_payment,
+                approval_prob=approval_prob,
+                credit_score=credit_score,
+                credit_band=credit_band,
+                risk_level=risk_level,
+                emi_to_income_pct=emi_to_income_pct
+            ) }}" class="btn-primary" style="flex:1;">
+                <i class="fa-solid fa-file-pdf"></i> Download PDF Report
+            </a>
+
+            <a href="{{ url_for('download_schedule',
+                loan_amount=loan_amount,
+                interest_rate=interest_rate,
+                tenure_years=tenure_years
+            ) }}" class="btn-secondary" style="flex:1;">
+                <i class="fa-solid fa-file-csv"></i> Download CSV Schedule
+            </a>
+        </div>
+
+        <!-- CHARTS -->
+        <div style="margin-top:25px; display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:20px;">
+            <div>
+                <h3 style="font-size:14px;">EMI Composition</h3>
+                <canvas id="emiChart" height="160"></canvas>
+            </div>
+            <div>
+                <h3 style="font-size:14px;">Loan Balance Over Time</h3>
+                <canvas id="balanceChart" height="160"></canvas>
+            </div>
+        </div>
+
+        <!-- AMORTIZATION TABLE -->
+        <div style="margin-top:30px;">
+            <h3 style="font-size:14px;">Amortization (First 12 Months)</h3>
+            <div style="max-height:240px; overflow-y:auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>EMI</th>
+                            <th>Interest</th>
+                            <th>Principal</th>
+                            <th>Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in schedule %}
+                            {% if loop.index <= 12 %}
+                            <tr>
+                                <td>{{ row.month }}</td>
+                                <td>{{ row.emi }}</td>
+                                <td>{{ row.interest }}</td>
+                                <td>{{ row.principal }}</td>
+                                <td>{{ row.balance }}</td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <p class="result-note">Full schedule available in CSV download.</p>
+        </div>
+
+        <!-- CREDIT SCORE ADVISOR -->
+        <div class="result-note" style="margin-top:20px;">
+            <h3 style="font-size:14px;"><i class="fa-solid fa-credit-card"></i> Credit Score Advisor</h3>
+            <p><strong>Score:</strong> {{ credit_score }} ({{ credit_band }})</p>
+            <p>{{ credit_comment }}</p>
+            <ul class="about-list">
+                {% for tip in credit_tips %}
+                    <li>{{ tip }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- PREPAYMENT SECTION -->
+        {% if has_prepay %}
+        <div class="result-note" style="margin-top:20px;">
+            <h3 style="font-size:14px;"><i class="fa-solid fa-wallet"></i> Prepayment Benefit</h3>
+            <p>Prepayment: <b>₹{{ prepay_amount }}</b> in month <b>{{ prepay_month }}</b></p>
+            <p>Interest Saved: <b>₹{{ prepay_interest_saved }}</b></p>
+            <p>Tenure Reduced: <b>{{ prepay_months_saved }}</b> months (New tenure ≈ {{ prepay_new_tenure_years }} years)</p>
+        </div>
+        {% endif %}
+
+        <!-- WHAT-IF SIMULATOR -->
+        <div class="result-note" style="margin-top:20px;">
+            <h3 style="font-size:14px;"><i class="fa-solid fa-sliders"></i> EMI What-If Simulator</h3>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;">
+                <div>
+                    <label>Interest Rate (% p.a.)</label>
+                    <input id="simRate" type="number" step="0.1" value="{{ interest_rate }}" class="sim-input">
+                </div>
+                <div>
+                    <label>Tenure (years)</label>
+                    <input id="simTenure" type="number" step="0.5" value="{{ tenure_years }}" class="sim-input">
+                </div>
+            </div>
+            <button onclick="runSimulation()" class="btn-secondary" style="margin-top:8px;">Simulate</button>
+            <div id="simOutput" style="margin-top:8px; font-size:12px;"></div>
+        </div>
+
+        <!-- BACK BUTTON -->
+        <div class="form-actions">
+            <a href="{{ url_for('home') }}" class="btn-secondary"><i class="fa-solid fa-arrow-left"></i> Back</a>
+        </div>
+
+    </div>
+</section>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// ---------- EMI Doughnut Chart ----------
+const emiCtx = document.getElementById('emiChart').getContext('2d');
+new Chart(emiCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Principal', 'Interest'],
+        datasets: [{
+            data: [{{ total_principal }}, {{ total_interest }}],
+            backgroundColor: ['#2563eb', '#ef4444'],
+            borderWidth: 1
+        }]
+    },
+    options: { plugins: { legend: { position: 'bottom' } } }
+});
+
+// ---------- Balance Line Chart ----------
+// balance_labels_json and balance_data_json are JSON strings like: [1,2,3,...]
+const balanceCtx = document.getElementById('balanceChart').getContext('2d');
+const balanceLabels = {{ balance_labels_json | safe }};
+const balanceData = {{ balance_data_json | safe }};
+
+new Chart(balanceCtx, {
+    type: 'line',
+    data: {
+        labels: balanceLabels,
+        datasets: [{
+            label: 'Outstanding Balance',
+            data: balanceData,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.15)',
+            borderWidth: 2,
+            tension: 0.25
+        }]
+    },
+    options: {
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { title: { display: true, text: 'Month' } },
+            y: { title: { display: true, text: 'Balance (₹)' } }
+        }
+    }
+});
+
+// ---------- What-If EMI Simulator ----------
+function calcEmiJS(P, rAnnual, years) {
+    const n = years * 12;
+    const r = rAnnual / (12 * 100);
+    if (n <= 0) return { emi: 0, interest: 0 };
+
+    if (r === 0) {
+        const emi = P / n;
+        return { emi: emi, interest: (emi * n) - P };
+    }
+
+    const emi = P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+    const total = emi * n;
+    const interest = total - P;
+    return { emi: emi, interest: interest };
+}
+
+function runSimulation() {
+    const P = Number("{{ loan_amount }}");
+    const rate = parseFloat(document.getElementById('simRate').value);
+    const years = parseFloat(document.getElementById('simTenure').value);
+
+    const res = calcEmiJS(P, rate, years);
+    document.getElementById('simOutput').innerHTML =
+        'EMI: <b>₹' + res.emi.toFixed(2) + '</b><br>' +
+        'Total Interest: <b>₹' + res.interest.toFixed(2) + '</b>';
+}
+</script>
+
+{% endblock %}

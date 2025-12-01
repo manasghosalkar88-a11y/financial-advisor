@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="result-wrapper">
+    <div class="card result-card">
+
+        <div class="card-header">
+            <h2><i class="fa-solid fa-scale-balanced"></i> Loan Comparison Result</h2>
+        </div>
+
+        <!-- Summary which is better -->
+        <div class="result-note" style="margin-bottom: 12px;">
+            {% if better_offer == "Offer 1" or better_offer == "Offer 2" %}
+                <p>
+                    <strong>{{ better_offer }}</strong> is cheaper overall by
+                    <strong>₹{{ diff }}</strong> (including processing fees).
+                </p>
+            {% else %}
+                <p><strong>Both offers cost the same overall.</strong></p>
+            {% endif %}
+        </div>
+
+        <!-- Two-column comparison -->
+        <div class="result-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+            <div class="result-item">
+                <h3 style="font-size: 14px; margin-bottom: 6px;">Offer 1</h3>
+                <p class="label">Loan Amount</p>
+                <p class="value">₹ {{ loan_amount1 }}</p>
+
+                <p class="label">Interest Rate</p>
+                <p>{{ interest_rate1 }} % p.a.</p>
+
+                <p class="label">Tenure</p>
+                <p>{{ tenure_years1 }} years</p>
+
+                <p class="label">Processing Fee</p>
+                <p>₹ {{ processing_fee1 }}</p>
+
+                <p class="label">Monthly EMI</p>
+                <p class="value">₹ {{ emi1 }}</p>
+
+                <p class="label">Total Interest</p>
+                <p>₹ {{ total_interest1 }}</p>
+
+                <p class="label">Total Cost (incl. fee)</p>
+                <p class="value">₹ {{ total_payment1 }}</p>
+            </div>
+
+            <div class="result-item">
+                <h3 style="font-size: 14px; margin-bottom: 6px;">Offer 2</h3>
+                <p class="label">Loan Amount</p>
+                <p class="value">₹ {{ loan_amount2 }}</p>
+
+                <p class="label">Interest Rate</p>
+                <p>{{ interest_rate2 }} % p.a.</p>
+
+                <p class="label">Tenure</p>
+                <p>{{ tenure_years2 }} years</p>
+
+                <p class="label">Processing Fee</p>
+                <p>₹ {{ processing_fee2 }}</p>
+
+                <p class="label">Monthly EMI</p>
+                <p class="value">₹ {{ emi2 }}</p>
+
+                <p class="label">Total Interest</p>
+                <p>₹ {{ total_interest2 }}</p>
+
+                <p class="label">Total Cost (incl. fee)</p>
+                <p class="value">₹ {{ total_payment2 }}</p>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('compare') }}" class="btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Compare Again
+            </a>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

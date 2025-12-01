@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section" data-aos="fade-up">
+  <div class="card">
+    <h2>Credit Score Advisor</h2>
+    <p class="card-subtitle">Get band, comment & tips for your credit score.</p>
+
+    <form method="POST" class="form-grid">
+      <label>
+        Credit Score
+        <input type="number" name="credit_score" required placeholder="300–900">
+      </label>
+      <div class="form-actions">
+        <button class="btn-primary" type="submit">Analyze</button>
+      </div>
+    </form>
+
+    {% if result %}
+      {% if result.error %}
+        <p style="color:#f87171;">Error: {{ result.error }}</p>
+      {% else %}
+        <div class="result-note" style="margin-top:16px;">
+          <h3>Result</h3>
+          <p><b>Score:</b> {{ result.score }} ({{ result.band }})</p>
+          <p>{{ result.comment }}</p>
+          <ul class="about-list">
+            {% for tip in result.tips %}
+              <li>{{ tip }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

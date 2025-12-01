@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="about-wrapper">
+    <div class="card">
+        <h2>About Smart Financial Advisor</h2>
+        <p class="card-subtitle">
+            Mini banking analytics project – perfect for JP Morgan / Deutsche Bank interviews.
+        </p>
+
+        <p>
+            This tool estimates EMI using a standard bank formula, predicts loan approval probability
+            using a machine learning model, and gives a simple risk and credit-score based advisory.
+            It also supports optional prepayment analysis, visual charts, and downloadable PDF/CSV reports.
+        </p>
+
+        <ul class="about-list">
+            <li>EMI calculator with interest & principal breakdown</li>
+            <li>AI-based approval probability (classification model)</li>
+            <li>Risk score using EMI/Income ratio and credit score</li>
+            <li>Prepayment impact – interest saved & tenure reduced</li>
+            <li>Exportable PDF EMI report and full CSV amortization schedule</li>
+            <li>Built using Flask, Python, HTML/CSS, and Chart.js</li>
+        </ul>
+    </div>
+</section>
+
+{% endblock %}
